@@ -324,6 +324,18 @@ class Object():
             self.energy.append(qq)
         self.t = 0
 
+    def update(self,sim):
+        self.energy = []
+        for h in numba.prange(len(sim.energies)):
+            qq = 0
+            for k in numba.prange(len(sim.energies[h].generations)):
+                qq += sim.use_formul(sim.formuls[sim.energies[h].generations[k]],
+                                     sim.materials[self.material].epslist[h], self.mass,
+                                     self.hp, self.x, self.z, self.y, 0, self.vectors[0][0].x,
+                                                self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                self.vectors[0][0].getlen())
+            self.energy.append(qq)
+
     def use_energy(self,sim):
         xch = 0
         ych = 0
@@ -331,11 +343,9 @@ class Object():
         for h in range(len(sim.materials[self.material].rul)):
             s = sim.materials[self.material].rul[h]
             numm, s = get_num(s)
-            # print(numm)
             n, s = get_num(s)
             g, s = get_num(s)
             if int(n - g) <= int(self.energy[numm]) and int(n + g) >= int(self.energy[numm]):
-                # print("work")
                 n = ord(s[0]) - ord('0')
                 s = s[1:]
                 for l in range(n):
@@ -424,11 +434,9 @@ class Object():
                         ych += c1
                         if not (isn):
                             s = s[1:]
-                    if t == 3:  # доделай
+                    if t == 3:
                         c1 = s[0]
-                        c2 = s[1]
-                        c3 = s[2]
-                        c4 = s[3]
+                        isn = 0
 
                         if c1 == "d":
                             c1 = self.egv[numm].x
@@ -449,8 +457,13 @@ class Object():
                                                 self.vectors[0][0].getlen())
                             isn = 1
                         else:
-                            c1 = ord(s[0]) - ord('0')
+                            c1, s = get_num(s)
+                            isn = 1
+                        if not (isn):
+                            s = s[1:]
 
+                        c2 = s[0]
+                        isn = 0
                         if c2 == "d":
                             c2 = self.egv[numm].y
                         elif c2 == "b":
@@ -470,8 +483,13 @@ class Object():
                                                 self.vectors[0][0].getlen())
                             isn = 1
                         else:
-                            c2 = ord(s[1]) - ord('0')
+                            c2, s = get_num(s)
+                            isn = 1
+                        if not (isn):
+                            s = s[1:]
 
+                        c3 = s[0]
+                        isn = 0
                         if c3 == "d":
                             c3 = self.egv[numm].z
                         elif c3 == "b":
@@ -491,8 +509,13 @@ class Object():
                                                 self.vectors[0][0].getlen())
                             isn = 1
                         else:
-                            c3 = ord(s[2]) - ord('0')
+                            c3, s = get_num(s)
+                            isn = 1
+                        if not (isn):
+                            s = s[1:]
 
+                        c4 = s[0]
+                        isn = 0
                         if c4 == "d":
                             c4 = self.egv[numm].z
                         elif c4 == "b":
@@ -512,16 +535,18 @@ class Object():
                                                 self.vectors[0][0].getlen())
                             isn = 1
                         else:
-                            c4 = ord(s[3]) - ord('0')
+                            c4, s = get_num(s)
+                            isn = 1
+                        if not (isn):
+                            s = s[1:]
 
                         vec = vector_4D(c1, c2, c3, c4)
                         g = 0
-                        if s[4] == "o":
+                        if s[0] == "o":
                             g = -1
                         else:
-                            g = ord(s[4]) - ord('0')
+                            g, s = get_num(s)
                         self.vectors.append([vec, g])
-                        s = s[5:]
                     if t == 4:
                         n = 0
                         if s[0] == "f":
@@ -542,10 +567,9 @@ class Object():
                         self.energy[num] -= cou
                         typ = ord(s[0]) - ord('0')
                         s = s[1:]
-                        if typ:  # typ == 1
+                        if typ == 1:  # typ == 1
                             c1 = s[0]
-                            c2 = s[1]
-                            c3 = s[2]
+                            isn = 0
 
                             if c1 == "d":
                                 c1 = self.egv[numm].x
@@ -564,9 +588,15 @@ class Object():
                                                     self.x, self.z, self.y, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
+                                isn = 1
                             else:
-                                c1 = ord(s[0]) - ord('0')
+                                c1, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
+                            c2 = s[0]
+                            isn = 0
                             if c2 == "d":
                                 c2 = self.egv[numm].y
                             elif c2 == "b":
@@ -584,9 +614,15 @@ class Object():
                                                     self.x, self.z, self.y, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
+                                isn = 1
                             else:
-                                c2 = ord(s[1]) - ord('0')
+                                c2, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
+                            c3 = s[0]
+                            isn = 0
                             if c3 == "d":
                                 c3 = self.egv[numm].z
                             elif c3 == "b":
@@ -604,11 +640,14 @@ class Object():
                                                     self.x, self.z, self.y, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
+                                isn = 1
                             else:
-                                c3 = ord(s[2]) - ord('0')
+                                c3, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
                             vec = vector_3D(c1, c2, c3)
-                            s = s[3:]
                             epp, s = get_num(s)
                             if sim.materials[self.material].epslist[numm] != 0:
                                 epp *= 1 / sim.materials[self.material].epslist[numm]  # тестовое, надо обдумать
@@ -675,12 +714,30 @@ class Object():
                         self.t += c1
                         if not (isn):
                             s = s[1:]
+                    if t == 8:
+                        e1 = ord(s[0]) - ord('0')
+                        s = s[1:]
+                        e2 = ord(s[0]) - ord('0')
+                        s = s[1:]
+                        c1 = s[0]
+                        if c1 == "f":
+                            s = s[1:]
+                            nn, s = get_num(s)
+                            c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
+                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                self.vectors[0][0].getlen())
+                            isn = 1
+                        else:
+                            c1, s = get_num(s)
+                            isn = 1
+                        self.energy[e1] -= c1
+                        self.energy[e2] += c1
         for h in range(len(self.energy)):
             for k in sim.energies[h].effects:
                 n, s = get_num(k)
                 g, s = get_num(s)
                 if int(n - g) <= int(self.energy[h]) and int(n + g) >= int(self.energy[h]):
-                    # print("work")
                     n = ord(s[0]) - ord('0')
                     s = s[1:]
                     for l in range(n):
@@ -769,12 +826,9 @@ class Object():
                             ych += c1
                             if not (isn):
                                 s = s[1:]
-                        if t == 3:  # доделай
+                        if t == 3:
                             c1 = s[0]
-                            c2 = s[1]
-                            c3 = s[2]
-                            c4 = s[3]
-
+                            isn = 0
                             if c1 == "d":
                                 c1 = self.egv[h].x
                             elif c1 == "b":
@@ -794,8 +848,13 @@ class Object():
                                                     self.vectors[0][0].getlen())
                                 isn = 1
                             else:
-                                c1 = ord(s[0]) - ord('0')
+                                c1, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
+                            c2 = s[0]
+                            isn = 0
                             if c2 == "d":
                                 c2 = self.egv[h].y
                             elif c2 == "b":
@@ -815,8 +874,13 @@ class Object():
                                                     self.vectors[0][0].getlen())
                                 isn = 1
                             else:
-                                c2 = ord(s[1]) - ord('0')
+                                c2, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
+                            c3 = s[0]
+                            isn = 0
                             if c3 == "d":
                                 c3 = self.egv[h].z
                             elif c3 == "b":
@@ -836,8 +900,13 @@ class Object():
                                                     self.vectors[0][0].getlen())
                                 isn = 1
                             else:
-                                c3 = ord(s[2]) - ord('0')
+                                c3, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
+                            c4 = s[0]
+                            isn = 0
                             if c4 == "d":
                                 c4 = self.egv[h].z
                             elif c4 == "b":
@@ -857,16 +926,18 @@ class Object():
                                                     self.vectors[0][0].getlen())
                                 isn = 1
                             else:
-                                c4 = ord(s[3]) - ord('0')
+                                c4, s = get_num(s)
+                                isn = 1
+                            if not (isn):
+                                s = s[1:]
 
                             vec = vector_4D(c1, c2, c3, c4)
                             g = 0
-                            if s[4] == "o":
+                            if s[0] == "o":
                                 g = -1
                             else:
-                                g = ord(s[4]) - ord('0')
+                                g, s = get_num(s)
                             self.vectors.append([vec, g])
-                            s = s[5:]
                         if t == 4:
                             n = 0
                             if s[0] == "f":
@@ -887,11 +958,9 @@ class Object():
                             self.energy[h] -= cou
                             typ = ord(s[0]) - ord('0')
                             s = s[1:]
-                            if typ:  # typ == 1
+                            if typ == 1:  # typ == 1
                                 c1 = s[0]
-                                c2 = s[1]
-                                c3 = s[2]
-
+                                isn = 0
                                 if c1 == "d":
                                     c1 = self.egv[h].x
                                 elif c1 == "b":
@@ -907,11 +976,18 @@ class Object():
                                     nn, s = get_num(s)
                                     c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
                                                         self.x, self.z, self.y, self.t, self.vectors[0][0].x,
-                                                        self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                        self.vectors[0][0].y, self.vectors[0][0].z,
+                                                        self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
+                                    isn = 1
                                 else:
-                                    c1 = ord(s[0]) - ord('0')
+                                    c1, s = get_num(s)
+                                    isn = 1
+                                if not (isn):
+                                    s = s[1:]
 
+                                c2 = s[0]
+                                isn = 0
                                 if c2 == "d":
                                     c2 = self.egv[h].y
                                 elif c2 == "b":
@@ -927,11 +1003,18 @@ class Object():
                                     nn, s = get_num(s)
                                     c2 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
                                                         self.x, self.z, self.y, self.t, self.vectors[0][0].x,
-                                                        self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                        self.vectors[0][0].y, self.vectors[0][0].z,
+                                                        self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
+                                    isn = 1
                                 else:
-                                    c2 = ord(s[1]) - ord('0')
+                                    c2, s = get_num(s)
+                                    isn = 1
+                                if not (isn):
+                                    s = s[1:]
 
+                                c3 = s[0]
+                                isn = 0
                                 if c3 == "d":
                                     c3 = self.egv[h].z
                                 elif c3 == "b":
@@ -947,13 +1030,17 @@ class Object():
                                     nn, s = get_num(s)
                                     c3 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
                                                         self.x, self.z, self.y, self.t, self.vectors[0][0].x,
-                                                        self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                        self.vectors[0][0].y, self.vectors[0][0].z,
+                                                        self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
+                                    isn = 1
                                 else:
-                                    c3 = ord(s[2]) - ord('0')
+                                    c3, s = get_num(s)
+                                    isn = 1
+                                if not (isn):
+                                    s = s[1:]
 
                                 vec = vector_3D(c1, c2, c3)
-                                s = s[3:]
                                 epp, s = get_num(s)
                                 if sim.materials[self.material].epslist[h] != 0:
                                     epp *= 1 / sim.materials[self.material].epslist[h]  # тестовое, надо обдумать
@@ -1022,6 +1109,25 @@ class Object():
                             self.t += c1
                             if not (isn):
                                 s = s[1:]
+                        if t == 8:
+                            e1 = ord(s[0]) - ord('0')
+                            s = s[1:]
+                            e2 = ord(s[0]) - ord('0')
+                            s = s[1:]
+                            c1 = s[0]
+                            if c1 == "f":
+                                s = s[1:]
+                                nn, s = get_num(s)
+                                c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
+                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                    self.vectors[0][0].getlen())
+                                isn = 1
+                            else:
+                                c1, s = get_num(s)
+                                isn = 1
+                            self.energy[e1] -= c1
+                            self.energy[e2] += c1
         return xch,ych
 
     def convert_formul(self,s,sim):
