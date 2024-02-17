@@ -29,7 +29,6 @@ class Simulation:
         for i in range(num_of_form):
             line = file.readline()[:-1]
             self.add_formul(line)
-
         line = file.readline()[:-1]
         num_of_en = int(line)
         for i in range(num_of_en):
@@ -74,7 +73,6 @@ class Simulation:
                 line = file.readline()[:-1]
                 num = float(line)
                 epsl.append(num)
-
             color = []
             line = file.readline()[:-1]
             num = int(line)
@@ -419,3 +417,6 @@ class Simulation:
         # print(ans)
         return ans
 
+    def update_sim(self):
+        for h in self.map:
+            h[2].update(self)
