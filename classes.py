@@ -60,33 +60,37 @@ class Radial_Energy():
         self.direction = direction
 
 class Static_Energy():
-    def __init__(self,energy,count,eps,direction,sdf_formula,obj,sim):
+    def __init__(self,x,y,z,energy,count,eps,direction,sdf_formula,obj,sim):
         self.energy = energy
         self.count = count
         self.eps = eps
         self.direction = direction
         self.sdf_formula = read_sdf(obj.convert_formul(sdf_formula,sim))
+        self.x = x
+        self.y = y
+        self.z = z
 
     def get_dist(self,x,y,z):
         dist = read_get_dist(x,y,z,self.sdf_formula,0)
         return dist
 
     def get_direction(self,obj,sim):
-        return vector_3D(sim.use_formul(self.direction[0],obj.energy[self.energy],
+        ans = [0,0,0]
+        for i in range(3):
+            if self.direction[i] != "-1":
+                ans[i] = sim.use_formul(self.direction[i],obj.energy[self.energy],
                               x=obj.x,y=obj.y,z=obj.z,t=obj.t,
                               mass=obj.mass,hp=obj.hp,mvx=obj.vectors[0].x,
                               mvy=obj.vectors[0].y,mvz=obj.vectors[0].z,
-                              mvt=obj.vectors[0].t,mvl=obj.vectors[0].getlen_4D()),
-                         sim.use_formul(self.direction[1], obj.energy[self.energy],
-                                        x=obj.x, y=obj.y, z=obj.z, t=obj.t,
-                                        mass=obj.mass, hp=obj.hp, mvx=obj.vectors[0].x,
-                                        mvy=obj.vectors[0].y, mvz=obj.vectors[0].z,
-                                        mvt=obj.vectors[0].t, mvl=obj.vectors[0].getlen_4D()),
-                         sim.use_formul(self.direction[2], obj.energy[self.energy],
-                                        x=obj.x, y=obj.y, z=obj.z, t=obj.t,
-                                        mass=obj.mass, hp=obj.hp, mvx=obj.vectors[0].x,
-                                        mvy=obj.vectors[0].y, mvz=obj.vectors[0].z,
-                                        mvt=obj.vectors[0].t, mvl=obj.vectors[0].getlen_4D()))
+                              mvt=obj.vectors[0].t,mvl=obj.vectors[0].getlen_4D())
+            else:
+                if i == 0:
+                    ans[i] = get_dist_to_sph(read_get_dist(obj.x,obj.y,obj.z,self.sdf_formula,0),obj.x,self.x)
+                elif i == 1:
+                    ans[i] = get_dist_to_sph(read_get_dist(obj.x,obj.y,obj.z,self.sdf_formula,0),obj.y,self.y)
+                elif i == 2:
+                    ans[i] = get_dist_to_sph(read_get_dist(obj.x,obj.y,obj.z,self.sdf_formula,0),obj.z,self.z)
+        return vector_3D(ans[0],ans[1],ans[2])
 
 def read_sdf(formul):
     ans = []
@@ -320,7 +324,7 @@ class Object():
             for k in numba.prange(len(sim.energies[h].generations)):
                 qq += sim.use_formul(sim.formuls[sim.energies[h].generations[k]],
                                      sim.materials[self.material].epslist[h], self.mass,
-                                     self.hp, self.x, self.z, self.y, 0, 0, 0, 0, 0, 0)
+                                     self.hp, self.x, self.y, self.z, 0, 0, 0, 0, 0, 0)
             self.energy.append(qq)
         self.t = 0
 
@@ -331,7 +335,7 @@ class Object():
             for k in numba.prange(len(sim.energies[h].generations)):
                 qq += sim.use_formul(sim.formuls[sim.energies[h].generations[k]],
                                      sim.materials[self.material].epslist[h], self.mass,
-                                     self.hp, self.x, self.z, self.y, 0, self.vectors[0][0].x,
+                                     self.hp, self.x, self.y, self.z, 0, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
             self.energy.append(qq)
@@ -368,7 +372,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -396,7 +400,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -423,7 +427,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -452,7 +456,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -478,7 +482,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c2 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -504,7 +508,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c3 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -530,7 +534,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c4 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -553,13 +557,12 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             n = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                               self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                               self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                self.vectors[0][0].getlen())
                         else:
                             n, s = get_num(s)
                         self.hp += n
-                        # print(self.hp)
                     if t == 6:
                         num = ord(s[0]) - ord('0')
                         s = s[1:]
@@ -567,7 +570,7 @@ class Object():
                         self.energy[num] -= cou
                         typ = ord(s[0]) - ord('0')
                         s = s[1:]
-                        if typ == 1:  # typ == 1
+                        if typ == 1:
                             c1 = s[0]
                             isn = 0
 
@@ -585,7 +588,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -611,7 +614,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c2 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -637,7 +640,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c3 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -654,13 +657,13 @@ class Object():
                             else:
                                 epp = 0
                             sim.waves.append(Energy_Wave(vec, num, cou, self.x, self.z, self.y, epp))
-                        else:  # typ == 0
+                        elif typ == 0:
                             r = 0
                             if s[0] == "f":
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 r = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                   self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                   self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                    self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                    self.vectors[0][0].getlen())
                                 if r <= 0:
@@ -673,7 +676,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 epp = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                     self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                     self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                      self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                      self.vectors[0][0].getlen())
                             else:
@@ -686,7 +689,29 @@ class Object():
                             if dir == 0:
                                 dir = -1
                             s = s[1:]
-                            sim.raden.append(Radial_Energy(r, self.x, self.z, self.y, num, cou, epp, dir))
+                            sim.raden.append(Radial_Energy(r, self.x, self.y, self.z, num, cou, epp, dir))
+                        elif typ == 2:
+                            sdf = ""
+                            while s[0] != "q":
+                                sdf = sdf + s[0]
+                                s = s[1:]
+                            dir = []
+                            for i in range(3):
+                                dir_ = ""
+                                while s[0] != "q":
+                                    dir_ = dir_ + s[0]
+                                    s = s[1:]
+                                dir.append(dir_)
+                            if s[0] == "f":
+                                s = s[1:]
+                                nn, s = get_num(s)
+                                epp = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
+                                                     self.x, self.y, self.z, self.t, self.vectors[0][0].x,
+                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
+                                                     self.vectors[0][0].getlen())
+                            else:
+                                epp, s = get_num(s)
+                            sim.custom_energires.append(Static_Energy(self.x,self.y,self.z,num,cou,epp,dir,sdf,self,sim))
                     if t == 7:
                         c1 = s[0]
                         isn = 0
@@ -704,7 +729,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -724,7 +749,7 @@ class Object():
                             s = s[1:]
                             nn, s = get_num(s)
                             c1 = sim.use_formul(sim.formuls[nn], int(self.energy[numm]), self.mass, self.hp,
-                                                self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                 self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                 self.vectors[0][0].getlen())
                             isn = 1
@@ -760,7 +785,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -788,7 +813,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -815,7 +840,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -843,7 +868,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -869,7 +894,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c2 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -895,7 +920,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c3 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -921,7 +946,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c4 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -944,7 +969,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 n = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                   self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                   self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                    self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                    self.vectors[0][0].getlen())
                             else:
@@ -975,7 +1000,7 @@ class Object():
                                     s = s[1:]
                                     nn, s = get_num(s)
                                     c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                        self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                        self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                         self.vectors[0][0].y, self.vectors[0][0].z,
                                                         self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
@@ -1002,7 +1027,7 @@ class Object():
                                     s = s[1:]
                                     nn, s = get_num(s)
                                     c2 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                        self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                        self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                         self.vectors[0][0].y, self.vectors[0][0].z,
                                                         self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
@@ -1029,7 +1054,7 @@ class Object():
                                     s = s[1:]
                                     nn, s = get_num(s)
                                     c3 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                        self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                        self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                         self.vectors[0][0].y, self.vectors[0][0].z,
                                                         self.vectors[0][0].t,
                                                         self.vectors[0][0].getlen())
@@ -1053,7 +1078,7 @@ class Object():
                                     s = s[1:]
                                     nn, s = get_num(s)
                                     r = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                       self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                       self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                        self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                        self.vectors[0][0].getlen())
                                     if r <= 0:
@@ -1067,7 +1092,7 @@ class Object():
                                     s = s[1:]
                                     nn, s = get_num(s)
                                     epp = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                         self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                         self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                          self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                          self.vectors[0][0].getlen())
                                 else:
@@ -1081,7 +1106,7 @@ class Object():
                                     dir = -1
                                 s = s[1:]
                                 sim.raden.append(
-                                    Radial_Energy(r, self.x, self.z, self.y, num, cou, epp, dir))
+                                    Radial_Energy(r, self.x, self.y, self.z, num, cou, epp, dir))
                         if t == 7:
                             c1 = s[0]
                             isn = 0
@@ -1099,7 +1124,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -1119,7 +1144,7 @@ class Object():
                                 s = s[1:]
                                 nn, s = get_num(s)
                                 c1 = sim.use_formul(sim.formuls[nn], int(self.energy[h]), self.mass, self.hp,
-                                                    self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                                    self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                                     self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                                     self.vectors[0][0].getlen())
                                 isn = 1
@@ -1137,7 +1162,7 @@ class Object():
                 s = s[1:]
                 form_num, s = get_num(s)
                 num = sim.use_formul(sim.formuls[form_num], 0, self.mass, self.hp,
-                                     self.x, self.z, self.y, self.t, self.vectors[0][0].x,
+                                     self.x, self.y, self.z, self.t, self.vectors[0][0].x,
                                      self.vectors[0][0].y, self.vectors[0][0].z, self.vectors[0][0].t,
                                      self.vectors[0][0].getlen())
                 ans = ans + str(num) + 'a'
@@ -1170,9 +1195,9 @@ def use_vec(l):
         #print(ob.pol[h[1]].x)
     x += new_vec.x
     ob.x += new_vec.x
-    y += new_vec.z
-    ob.y += new_vec.z
-    ob.z += new_vec.y
+    y += new_vec.y
+    ob.y += new_vec.y
+    ob.z += new_vec.z
     ob.t += new_vec.t
     nvectors.append([new_vec,-1])
     ob.vectors = nvectors
