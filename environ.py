@@ -7,8 +7,8 @@ import numba
 def main():
     pygame.font.init()
 
-    fieldx = 500
-    fieldy = 500
+    fieldx = 1500
+    fieldy = 1000
 
     screen = pygame.display.set_mode((fieldx, fieldy), pygame.SCALED)
     screen.set_alpha(None)
@@ -21,7 +21,7 @@ def main():
 
     simul = pyphicus.Simulation()
 
-    simul.load_settings("Phis_rul\\set_3")
+    simul.load_settings("Phis_rul\\set_6")
 
     paused = False
 
@@ -44,6 +44,8 @@ def main():
     start_eps = 10
     start_dir = 1
     list_of_act_pos = 0
+
+    screen.fill([255, 255, 255])
 
     ensum = 0
 
@@ -130,10 +132,10 @@ def main():
                 m_p = pygame.mouse.get_pos()
                 if event.button == 1:
                     if shift:
-                        simul.raden.append(pyphicus.Radial_Energy(r_s,m_p[0],0,m_p[1],cur_en,start_en,start_eps,start_dir))
+                        simul.raden.append(pyphicus.Radial_Energy(r_s,m_p[0],m_p[1],0,cur_en,start_en,start_eps,start_dir))
                     elif ctrl:
                         simul.waves.append(
-                            pyphicus.Energy_Wave(pyphicus.vector_3D(0,0,0),cur_en,start_en,m_p[0],0,m_p[1],start_eps))
+                            pyphicus.Energy_Wave(pyphicus.vector_3D(0,0,0),cur_en,start_en,m_p[0],m_p[1],0,start_eps))
                     else:
                         simul.add_object(pyphicus.Object(m_p[0], m_p[1], cur_mat, 100, simul))
                         simul.map[-1][2].t = simul.time
@@ -161,16 +163,18 @@ def main():
         if not paused:
             simul.cadr()
 
-        if len(simul.map) > 0:
+        try:
             pygame.gfxdraw.circle(screen, int(simul.map[mappos][2].x), int(simul.map[mappos][2].y), 5, [255, 0, 0])
+        except:
+            pass
 
         for h in numba.prange(len(simul.waves)):
-            pygame.gfxdraw.circle(screen, int(simul.waves[h].x), int(simul.waves[h].z), 5, simul.energies[simul.waves[h].energy].color)
+            pygame.gfxdraw.circle(screen, int(simul.waves[h].x), int(simul.waves[h].y), 5, simul.energies[simul.waves[h].energy].color)
             #f3menu3 = my_font.render(str(simul.waves[h].count), True, simul.energies[simul.waves[h].energy].color)
             #screen.blit(f3menu3, (simul.waves[h].x, simul.waves[h].z - 10))
 
         for h in numba.prange(len(simul.raden)):
-            pygame.gfxdraw.circle(screen, int(simul.raden[h].x), int(simul.raden[h].z), simul.raden[h].r, simul.energies[simul.raden[h].energy].color)
+            pygame.gfxdraw.circle(screen, int(simul.raden[h].x), int(simul.raden[h].y), simul.raden[h].r, simul.energies[simul.raden[h].energy].color)
             '''f3menu3 = my_font.render(str(simul.raden[h].count), True, simul.energies[simul.raden[h].energy].color)
             screen.blit(f3menu3, (simul.raden[h].x, simul.raden[h].z - 10))'''
 
