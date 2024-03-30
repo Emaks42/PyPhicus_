@@ -17,7 +17,7 @@ class Simulation:
         self.ensum = 0
 
     def add_object(self,object,add_base_time_vec=1):
-        self.map.append([object.x, object.y, Object(object.x, object.y, object.material, object.hp,self), 1])
+        self.map.append([object.x, object.y, Object(object.x, object.y, object.material, object.hp,self, z = object.z), 1])
         if add_base_time_vec:
             self.map[-1][2].vectors.append([vector_4D(0, 0, 0, 1), -1])
 
@@ -114,6 +114,8 @@ class Simulation:
             for k in range(len(self.energies)):
                 self.ensum += self.map[h][2].energy[k]
                 ul += len(str(self.map[h][2].energy[k]))
+            if abs(self.map[h][2].x) + abs(self.map[h][2].y) + abs(self.map[h][2].z) > 30000:
+                mtr.append(self.map[h])
         for h in mtr:
             self.map.remove(h)
 
@@ -128,15 +130,15 @@ class Simulation:
                         self.map[k][2].energy[self.raden[h].energy] += self.raden[h].count
                         self.map[k][2].egv[self.raden[h].energy].sum(
                             vector_3D(get_dist_to_sph(self.raden[h].r, self.map[k][0], self.raden[h].x),
-                                      get_dist_to_sph(self.raden[h].r, self.map[k][2].z,
-                                                      self.raden[h].y),
                                       get_dist_to_sph(self.raden[h].r, self.map[k][1],
+                                                      self.raden[h].y),
+                                      get_dist_to_sph(self.raden[h].r, self.map[k][2].z,
                                                       self.raden[h].z)))
                         self.map[k][2].egv[self.raden[h].energy].umn(self.raden[h].direction)
                         self.map[k][2].rv[self.raden[h].energy].sum(
                             vector_3D(self.map[k][0] - self.raden[h].x,
-                                      self.map[k][2].z - self.raden[h].y,
-                                      self.map[k][1] - self.raden[h].z))
+                                      self.map[k][1] - self.raden[h].y,
+                                      self.map[k][2].z - self.raden[h].z))
                         self.map[k][2].rv[self.raden[h].energy].norm()
                         self.map[k][2].rv[self.raden[h].energy].umn(self.raden[h].direction)
                         radentorem.append(self.raden[h])
@@ -145,14 +147,14 @@ class Simulation:
                     self.raden[h].count -= self.raden[h].eps * epsdis
                     self.map[k][2].egv[self.raden[h].energy].sum(
                     vector_3D(get_dist_to_sph(self.raden[h].r, self.map[k][0], self.raden[h].x),
-                              get_dist_to_sph(self.raden[h].r, self.map[k][2].z,
+                              get_dist_to_sph(self.raden[h].r, self.map[k][1],
                                               self.raden[h].y),
-                              get_dist_to_sph(self.raden[h].r, self.map[k][1], self.raden[h].z)))
+                              get_dist_to_sph(self.raden[h].r, self.map[k][2].z, self.raden[h].z)))
                     self.map[k][2].egv[self.raden[h].energy].umn(self.raden[h].direction)
                     self.map[k][2].rv[self.raden[h].energy].sum(
                     vector_3D(self.map[k][0] - self.raden[h].x,
-                              self.map[k][2].z - self.raden[h].y,
-                              self.map[k][1] - self.raden[h].z))
+                              self.map[k][1] - self.raden[h].y,
+                              self.map[k][2].z - self.raden[h].z))
                     self.map[k][2].rv[self.raden[h].energy].norm()
                     self.map[k][2].rv[self.raden[h].energy].umn(self.raden[h].direction)
         for h in numba.prange(len(radentorem)):
