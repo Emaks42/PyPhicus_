@@ -1935,6 +1935,11 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
 
     objects = []
 
+    '''objects.append([1000, 1000, Object(1000, 1000, spolly, spol, -400, 1, uolid, "стол"), 1])
+    sim.add_object(pyphicus.Object(1000,1000, 0, 100, sim))
+    objects.append([500, 500, Object(500, 500, polyw, polw, -500, 1, uolid, "ружьё"), 1])
+    sim.add_object(pyphicus.Object(1000, 1000, 0, 100, sim))'''
+
     xc = 0
     yc = 0
     sim.add_object(pyphicus.Object(xc, yc, 2, 100, sim, z=0))
@@ -1951,6 +1956,8 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
     print(len(sim.map))
 
     print(len(map))
+
+    player_object_id = 0
 
     wiggle_switch = True
     wiggle = 0
@@ -1998,6 +2005,8 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
     shift = False
     ctrl = False
 
+    spectating = True
+
     uf = 0
     fs = 0
     add_y = 0
@@ -2024,6 +2033,8 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
                 running = False
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c:
+                    spectating = not spectating
                 if event.key == pygame.K_LSHIFT:
                     move_down = True
                 if event.key == pygame.K_SPACE:
@@ -2060,7 +2071,7 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
                     mini = -1
                     minn = 500
                     for obj in numba.prange(len(objects)):
-                        if type(objects[obj]) == list:
+                        if type(objects[obj]) == list and obj != player_object_id:
                             if distance(objects[obj][0], objects[obj][1], x, y) < minn:
                                 minn = distance(objects[obj][0], objects[obj][1], x, y)
                                 mini = obj
@@ -2115,6 +2126,18 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
                     camera_left = True
                 if event.button == 3:
                     camera_right = True
+                if event.button == 4:
+                    player_object_id += 1
+                    if player_object_id >= len(objects):
+                        player_object_id = 0
+                    if objects[player_object_id] == 0:
+                        player_object_id += 1
+                if event.button == 5:
+                    player_object_id -= 1
+                    if player_object_id < 0:
+                        player_object_id = len(objects) - 1
+                    if objects[player_object_id] == 0:
+                        player_object_id -= 1
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     camera_left = False
@@ -2152,6 +2175,10 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
             hands_x -= 10
         if hands_right:
             hands_x += 10
+
+        if spectating:
+            x = objects[player_object_id][0]
+            y = objects[player_object_id][1]
 
         if hands_rot_left:
             add_rot -= 2
@@ -2237,7 +2264,11 @@ Point( 0.23139704322540597 , 336.0 , -499.9999732277039 ),
                 objects[map_ob][2].y = sim.map[map_ob][2].y
                 objects[map_ob][1] = sim.map[map_ob][1]
                 objects[map_ob][2].z_pos = sim.map[map_ob][2].z
-                map.append(objects[map_ob])
+                if map_ob != player_object_id and spectating:
+                    map.append(objects[map_ob])
+                if not spectating:
+                    map.append(objects[map_ob])
+                #print(sim.map[map_ob][2].vectors[0][0].z)
 
         try:
             map = distribution_buffer_func(map,x,y)
