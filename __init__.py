@@ -192,7 +192,7 @@ class Simulation:
             self.waves[h].move()
             self.ensum += self.waves[h].count
             for k in numba.prange(len(self.map)):
-                if distance(self.map[k][0], self.map[k][1], self.waves[h].x, self.waves[h].z) <= 5:
+                if distance_3D(self.map[k][0], self.map[k][1], self.map[k][2].z, self.waves[h].x, self.waves[h].y, self.waves[h].z) <= 5:
                     epsdis = self.materials[self.map[k][2].material].epslist[self.waves[h].energy]
                     if self.waves[h].count <= self.waves[h].eps * epsdis:
                         self.map[k][2].energy[self.waves[h].energy] += self.waves[h].count
