@@ -151,6 +151,11 @@ def distance(x1, y1, x2, y2):
     return dist
 
 @njit(fastmath=True, cache=True)
+def distance_3D(x1, y1, z1, x2, y2, z2):
+    dist = math.sqrt((x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2)
+    return dist
+
+@njit(fastmath=True, cache=True)
 def get_dist_to_sph(r,p,c):
     c3 = p - c
     if c3 != 0:
