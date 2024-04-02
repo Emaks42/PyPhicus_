@@ -656,7 +656,7 @@ class Object():
                                 epp *= 1 / sim.materials[self.material].epslist[numm]  # тестовое, надо обдумать
                             else:
                                 epp = 0
-                            sim.waves.append(Energy_Wave(vec, num, cou, self.x, self.z, self.y, epp))
+                            sim.waves.append(Energy_Wave(vec, num, cou, self.x, self.y, self.z, epp))
                         elif typ == 0:
                             r = 0
                             if s[0] == "f":
@@ -1071,7 +1071,7 @@ class Object():
                                     epp *= 1 / sim.materials[self.material].epslist[h]  # тестовое, надо обдумать
                                 else:
                                     epp = 0
-                                sim.waves.append(Energy_Wave(vec, num, cou, self.x, self.z, self.y, epp))
+                                sim.waves.append(Energy_Wave(vec, num, cou, self.x, self.y, self.z, epp))
                             else:  # typ == 0
                                 r = 0
                                 if s[0] == "f":
